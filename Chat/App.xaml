@@ -5,13 +5,26 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:ignore="http://www.galasoft.ch/ignore"
-             StartupUri="MainWindow.xaml"
+			 xmlns:viewModel="clr-namespace:Chat.ViewModel"
+			 StartupUri="MainWindow.xaml"
              mc:Ignorable="d ignore">
-    
+
     <Application.Resources>
-        <!--Global View Model Locator-->
-        <vm:ViewModelLocator x:Key="Locator"
-                             d:IsDataSource="True" />
+        <ResourceDictionary>
+            <viewModel:ViewModelLocator x:Key="Locator" 
+                                 d:IsDataSource="True" 
+                                 xmlns:vm="clr-namespace:Chat.ViewModel" />
+
+            <SolidColorBrush x:Key="MyBrush" Color="Orange"/>
+            <SolidColorBrush x:Key="FriendBrush" Color="CornflowerBlue"/>
+
+            <ResourceDictionary.MergedDictionaries>
+                <!-- MahApps.Metro resource dictionaries. Make sure that all file names are Case Sensitive! -->
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Colors.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Application.Resources>
     
 </Application>

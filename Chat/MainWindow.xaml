@@ -4,11 +4,12 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ignore="http://www.galasoft.ch/ignore"
+        xmlns:controls="clr-namespace:Chat.Controls"
         mc:Ignorable="d ignore"
         Height="300"
         Width="300"
         Title="MVVM Light Application"
-        DataContext="{Binding Main, Source={StaticResource Locator}}">
+        DataContext="{Binding MainVm, Source={StaticResource Locator}}">
     
     <Window.Resources>
         <ResourceDictionary>
@@ -19,14 +20,37 @@
     </Window.Resources>
 
     <Grid x:Name="LayoutRoot">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
 
-        <TextBlock FontSize="36"
-                   FontWeight="Bold"
-                   Foreground="Purple"
-                   Text="{Binding WelcomeTitle}"
-                   VerticalAlignment="Center"
-                   HorizontalAlignment="Center"
-                   TextWrapping="Wrap" />
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
+            <Grid Grid.Row="0">
+                <Button>
+
+                </Button>
+            </Grid>
+
+            <Grid Grid.Row="1">
+
+            </Grid>
+
+            <Grid Grid.Row="2">
+                <Button>
+
+                </Button>
+            </Grid>
+        </Grid>
+
+        <Grid Grid.Column="1">
+            <controls:Chat/>
+        </Grid>
     </Grid>
 </Window>
