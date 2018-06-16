@@ -1,14 +1,23 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections;
+using System.Collections.ObjectModel;
+using System.Runtime.Remoting;
+using System.Runtime.Remoting.Channels;
+using Ch.Elca.Iiop;
+using Chat.Interface;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Messaging;
 using Chat.Model;
 using GalaSoft.MvvmLight.CommandWpf;
 using GalaSoft.MvvmLight.Threading;
+using omg.org.CosNaming;
 
 namespace Chat.ViewModel
 {
     public class ChatViewModel : ViewModelBase
     {
+        private NamingContext nameService;
+        private NameComponent[] name = new NameComponent[] { new NameComponent("Timmy") };
         //public SelfPlayer SelfPlayer => SelfPlayer.Instance;
 
         //public Opponent Opponent => Opponent.Instance;
@@ -73,6 +82,36 @@ namespace Chat.ViewModel
             this.ChatMsgList = new ObservableCollection<ChatMsg>();
 
             HardReset();
+            LoadChatSvc();
+        }
+
+        private void LoadChatSvc()
+        {
+            //string nameServiceUrl = args[0];
+            string nameServiceUrl = "corbaloc::localhost:8099/NameService";
+            
+            // register the channel
+            int port = 8087;
+            /*if (args.Length > 0)
+            {
+                port = Int32.Parse(args[1]);
+            }*/
+
+            IDictionary propBag = new Hashtable();
+            propBag["port"] = port;
+            propBag["name"] = "Timmy";  // here enter unique channel name
+
+            IiopChannel chan = new IiopChannel(propBag);
+            ChannelServices.RegisterChannel(chan, false);
+
+            ChatSvcImpl svc = new ChatSvcImpl();
+            string objectURI = "Timmy";
+            RemotingServices.Marshal(svc, objectURI);
+            
+            // publish the adder with an external name service
+            this.nameService = (NamingContext)RemotingServices.Connect(typeof(NamingContext), nameServiceUrl);
+
+            this.nameService.rebind(this.name, svc);
         }
 
         private void HardReset()
@@ -90,6 +129,28 @@ namespace Chat.ViewModel
         private void PostMethod()
         {
             //GameMaster.Client.WriteMessageToChat(this.PostText);
+            
+            try
+            {
+                IDictionary propBag = new Hashtable();
+                propBag["name"] = "Dummy";  // here enter unique channel name
+
+                // register the channel
+                IiopClientChannel channel = new IiopClientChannel(propBag);
+                ChannelServices.RegisterChannel(channel, false);
+
+                NameComponent[] friendName = new NameComponent[] { new NameComponent("Dummy") };
+
+                // get the reference to the adder
+                IChatSvc friend = (IChatSvc)this.nameService.resolve(friendName);
+
+                // call add
+                friend.WriteMessage(this.PostText);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(@"exception: " + e);
+            }
 
             this.PostText = string.Empty;
         }
