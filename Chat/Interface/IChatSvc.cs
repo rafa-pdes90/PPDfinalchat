@@ -3,8 +3,8 @@
 namespace Chat.Interface
 {
     /// <summary>The adder interface</summary>
-    interface IChatSvc
+    internal interface IChatSvc
     {
-        void WriteMessage(string msg);
+        void WriteMessage(ChatMsg msg);
     }
 }

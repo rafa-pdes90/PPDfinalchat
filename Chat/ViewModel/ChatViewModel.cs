@@ -3,31 +3,29 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
+using System.Threading.Tasks;
 using Ch.Elca.Iiop;
 using Chat.Interface;
 using GalaSoft.MvvmLight;
-using GalaSoft.MvvmLight.Messaging;
 using Chat.Model;
 using GalaSoft.MvvmLight.CommandWpf;
 using GalaSoft.MvvmLight.Threading;
 using omg.org.CosNaming;
+using System.Configuration;
+using System.Collections.Specialized;
+using System.Linq;
+using GalaSoft.MvvmLight.Messaging;
 
 namespace Chat.ViewModel
 {
     public class ChatViewModel : ViewModelBase
     {
-        private NamingContext nameService;
-        private NameComponent[] name = new NameComponent[] { new NameComponent("Timmy") };
-        //public SelfPlayer SelfPlayer => SelfPlayer.Instance;
-
-        //public Opponent Opponent => Opponent.Instance;
-
         /// <summary>
         /// The <see cref="PostText" /> property's name.
         /// </summary>
         public const string PostTextPropertyName = "PostText";
 
-        private string _postText;
+        private string _postText = string.Empty;
 
         /// <summary>
         /// Sets and gets the PostText property.
@@ -40,29 +38,47 @@ namespace Chat.ViewModel
         }
 
         /// <summary>
-        /// The <see cref="PostSizeLimit" /> property's name.
+        /// The <see cref="Nickname" /> property's name.
         /// </summary>
-        public const string PostSizeLimitPropertyName = "PostSizeLimit";
+        public const string NicknamePropertyName = "Nickname";
 
-        private int _postSizeLimit;
+        private string _nickname = string.Empty;
 
         /// <summary>
-        /// Sets and gets the PostSizeLimit property.
+        /// Sets and gets the Nickname property.
         /// Changes to that property's value raise the PropertyChanged event. 
         /// </summary>
-        public int PostSizeLimit
+        public string Nickname
         {
-            get => this._postSizeLimit;
-            set => Set(() => this.PostSizeLimit, ref this._postSizeLimit, value, true);
+            get => _nickname;
+            set => Set(() => Nickname, ref _nickname, value);
         }
 
-        private ObservableCollection<ChatMsg> _chatMsgList;
+        /// <summary>
+        /// The <see cref="IsLoading" /> property's name.
+        /// </summary>
+        public const string IsLoadingPropertyName = "IsLoading";
 
-        public ObservableCollection<ChatMsg> ChatMsgList
+        private bool _isLoading = false;
+
+        /// <summary>
+        /// Sets and gets the IsLoading property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public bool IsLoading
         {
-            get => this._chatMsgList;
-            set => Set(() => this.ChatMsgList, ref this._chatMsgList, value);
+            get => this._isLoading;
+            set => Set(() => this.IsLoading, ref this._isLoading, value);
         }
+
+        private RelayCommand _startCommand;
+
+        /// <summary>
+        /// Gets the StartCommand.
+        /// </summary>
+        public RelayCommand StartCommand =>
+            this._startCommand ?? (this._startCommand = new RelayCommand(StartMethod,
+                () => !string.IsNullOrEmpty(this.Nickname) && !this.IsLoading));
 
         private RelayCommand _postCommand;
 
@@ -72,87 +88,115 @@ namespace Chat.ViewModel
         public RelayCommand PostCommand =>
             this._postCommand ?? (this._postCommand = new RelayCommand(PostMethod,
                 () => !string.IsNullOrEmpty(this.PostText)));
-        
+
+        private ObservableCollection<ChatMsg> _chatMsgList;
+
+        public ObservableCollection<ChatMsg> ChatMsgList
+        {
+            get => this._chatMsgList;
+            set => Set(() => this.ChatMsgList, ref this._chatMsgList, value);
+        }
+
+        private NamingContext NameService { get; set; }
+
 
         public ChatViewModel()
         {
-            Messenger.Default.Register<ChatMsg>(this, "NewChatMsg", AddToChatMsgList);
-            Messenger.Default.Register<int>(this, "HardReset", x => HardReset());
-
             this.ChatMsgList = new ObservableCollection<ChatMsg>();
 
-            HardReset();
-            LoadChatSvc();
+            Messenger.Default.Register<ChatMsg>(this, "NewMsg", AddToChatMsgList);
         }
 
-        private void LoadChatSvc()
+        private void StartMethod()
         {
-            //string nameServiceUrl = args[0];
-            string nameServiceUrl = "corbaloc::localhost:8099/NameService";
-            
-            // register the channel
-            int port = 8087;
-            /*if (args.Length > 0)
+            this.IsLoading = true;
+            Task.Run(() =>
             {
-                port = Int32.Parse(args[1]);
-            }*/
+                ConnectToServers();
+                this.IsLoading = false;
+                Messenger.Default.Send(this.Nickname, "Connected");
+            });
+        }
 
-            IDictionary propBag = new Hashtable();
-            propBag["port"] = port;
-            propBag["name"] = "Timmy";  // here enter unique channel name
+        private void ConnectToServers()
+        {
+            NameValueCollection serverConfig = ConfigurationManager.AppSettings;
 
-            IiopChannel chan = new IiopChannel(propBag);
+            string nameServiceUrl = "corbaloc::" + serverConfig.Get("NameServerHost") +
+                                    ":" + serverConfig.Get("NameServerPort") + "/NameService";
+
+            IDictionary propBag = new Hashtable
+            {
+                ["port"] = 0,
+                ["name"] = this.Nickname, // here enter unique channel name
+            };
+
+            // register the channel
+            var chan = new IiopChannel(propBag);
             ChannelServices.RegisterChannel(chan, false);
 
-            ChatSvcImpl svc = new ChatSvcImpl();
-            string objectURI = "Timmy";
-            RemotingServices.Marshal(svc, objectURI);
-            
-            // publish the adder with an external name service
-            this.nameService = (NamingContext)RemotingServices.Connect(typeof(NamingContext), nameServiceUrl);
+            var svc = new ChatSvcImpl();
+            RemotingServices.Marshal(svc, this.Nickname);
 
-            this.nameService.rebind(this.name, svc);
-        }
+            var name = new[] { new NameComponent(this.Nickname) };
 
-        private void HardReset()
-        {
-            this.PostText = string.Empty;
-            this.PostSizeLimit = 140;
-            this.ChatMsgList.Clear();
-        }
-
-        private void AddToChatMsgList(ChatMsg chatMessage)
-        {
-            DispatcherHelper.CheckBeginInvokeOnUI(() => this.ChatMsgList.Add(chatMessage));
+            // publish the svc with an external name service
+            this.NameService = (NamingContext)RemotingServices.Connect(typeof(NamingContext), nameServiceUrl);
+            this.NameService.rebind(name, svc);
         }
 
         private void PostMethod()
         {
-            //GameMaster.Client.WriteMessageToChat(this.PostText);
-            
+            var newMsg = new ChatMsg()
+            {
+                SenderName = this.Nickname,
+                MsgContent = this.PostText,
+            };
+
+            this.PostText = string.Empty;
+
+            Task.Run(() =>
+            {
+                SendMessage(newMsg);
+                newMsg.IsSelfMessage = true;
+                AddToChatMsgList(newMsg);
+            });
+        }
+
+        private void SendMessage(ChatMsg msg)
+        {
             try
             {
-                IDictionary propBag = new Hashtable();
-                propBag["name"] = "Dummy";  // here enter unique channel name
+                string testName = new string(this.Nickname.Reverse().ToArray());
+
+                IDictionary propBag = new Hashtable()
+                {
+                    ["name"] = testName,  // here enter unique channel name
+                };
 
                 // register the channel
-                IiopClientChannel channel = new IiopClientChannel(propBag);
+                var channel = new IiopClientChannel(propBag);
                 ChannelServices.RegisterChannel(channel, false);
 
-                NameComponent[] friendName = new NameComponent[] { new NameComponent("Dummy") };
+                var friendName = new[] { new NameComponent(testName) };
 
                 // get the reference to the adder
-                IChatSvc friend = (IChatSvc)this.nameService.resolve(friendName);
+                var friend = (IChatSvc)this.NameService.resolve(friendName);
 
                 // call add
-                friend.WriteMessage(this.PostText);
+                friend.WriteMessage(msg);
+
+                ChannelServices.UnregisterChannel(channel);
             }
             catch (Exception e)
             {
                 Console.WriteLine(@"exception: " + e);
             }
+        }
 
-            this.PostText = string.Empty;
+        private void AddToChatMsgList(ChatMsg chatMessage)
+        {
+            DispatcherHelper.CheckBeginInvokeOnUI(() => this.ChatMsgList.Add(chatMessage));
         }
     }
 }

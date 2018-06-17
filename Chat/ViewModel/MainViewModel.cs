@@ -1,6 +1,4 @@
-﻿using System;
-using System.Runtime.Remoting;
-using GalaSoft.MvvmLight;
+﻿using GalaSoft.MvvmLight;
 
 namespace Chat.ViewModel
 {
@@ -12,12 +10,12 @@ namespace Chat.ViewModel
     /// </summary>
     public class MainViewModel : ViewModelBase
     {
-
         /// <summary>
         /// Initializes a new instance of the MainViewModel class.
         /// </summary>
         public MainViewModel()
         {
+
         }
     }
 }

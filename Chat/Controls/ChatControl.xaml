@@ -1,0 +1,87 @@
+﻿<UserControl x:Class="Chat.Controls.ChatControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:ignore="http://www.galasoft.ch/ignore"
+             xmlns:converters="clr-namespace:Chat.Converters"
+             mc:Ignorable="d ignore"
+             Background="White"
+             DataContext="{Binding ChatVm, Source={StaticResource Locator}}"
+             d:DesignWidth="480" d:DesignHeight="320" >
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Chat;component/Skins/ChatSkin.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <converters:HalfishWidthConverter x:Key="HalfishWidthConverter"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <Border BorderBrush="LightGray" BorderThickness="1">
+                <ScrollViewer x:Name="ChatScrollViewer" ScrollChanged="ChatScrollViewer_ScrollChanged">
+                    <ItemsControl x:Name="ChatHolder" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Padding="10"
+                                  ItemsSource="{Binding ChatMsgList}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel x:Name="MsgPanel" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding SenderName, StringFormat={}{0}:}" FontWeight="Bold" FontSize="15"/>
+                                    <Border x:Name="MsgBorder" BorderThickness="1" BorderBrush="Black" CornerRadius="5" Margin="0,0,0,5" Padding="5"
+                                            MaxWidth="{Binding ActualWidth, ElementName=ChatHolder, Mode=OneWay, Converter={StaticResource HalfishWidthConverter}}">
+                                        <TextBlock TextWrapping="Wrap" FontSize="14"
+                                                   Text="{Binding MsgContent}"/>
+                                    </Border>
+                                </StackPanel>
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding IsSelfMessage}" Value="true">
+                                        <Setter TargetName="MsgPanel" Property="HorizontalAlignment" Value="Right"/>
+                                        <Setter TargetName="MsgBorder" Property="Background" Value="{StaticResource MyBrush}"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsSelfMessage}" Value="false">
+                                        <Setter TargetName="MsgPanel" Property="HorizontalAlignment" Value="Left"/>
+                                        <Setter TargetName="MsgBorder" Property="Background" Value="{StaticResource FriendBrush}"/>
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+
+        <Grid Grid.Row="1" Height="60">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBox x:Name="NicknameTextBox" Grid.Column="0" AcceptsReturn="False" TextWrapping="Wrap" BorderThickness="1"
+                     mah:TextBoxHelper.ClearTextButton="True"
+                     mah:TextBoxHelper.Watermark="Write a message..."
+                     VerticalScrollBarVisibility="Auto" FontSize="13"
+                     Text="{Binding PostText, UpdateSourceTrigger=PropertyChanged}">
+                <TextBox.InputBindings>
+                    <KeyBinding Key="Return"
+                                Command="{Binding PostCommand}"/>
+                </TextBox.InputBindings>
+            </TextBox>
+
+            <Button Grid.Column="1" HorizontalAlignment="Right" Width="60"
+                    Command="{Binding PostCommand}"
+                    Style="{DynamicResource AccentedSquareButtonStyle}">
+                <Button.Content>
+                    <Label Content="Post" BorderThickness="0" Padding="0"/>
+                </Button.Content>
+            </Button>
+        </Grid>
+    </Grid>
+</UserControl>

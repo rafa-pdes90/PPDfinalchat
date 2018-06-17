@@ -1,0 +1,99 @@
+﻿<mah:MetroWindow x:Class="Chat.View.ConnectionWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+        xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+        xmlns:loadin="clr-namespace:LoadingIndicators.WPF;assembly=LoadingIndicators.WPF"
+        xmlns:ignore="http://www.galasoft.ch/ignore"
+        mc:Ignorable="d ignore"
+        Title="Login" TitleCharacterCasing="Normal" Height="300" Width="600"
+        ResizeMode="NoResize" WindowStartupLocation="CenterScreen"
+        Background="#A8228B22" WindowTransitionsEnabled="False" ShowInTaskbar="False"
+        BorderThickness="0" GlowBrush="Black"
+        DataContext="{Binding ChatVm, Source={StaticResource Locator}}">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Chat;component/Skins/ConnSkin.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" VerticalAlignment="center" HorizontalAlignment="Center">
+            <Label Content="Enter a Nickname" HorizontalAlignment="Center"
+                   FontSize="21" FontFamily="Segoe UI Semibold" Foreground="White">
+                <Label.Effect>
+                    <DropShadowEffect />
+                </Label.Effect>
+            </Label>
+            <Border Background="{Binding Background, ElementName=NicknameTextBox}">
+                <StackPanel Orientation="Horizontal">
+                    <iconPacks:PackIconMaterial Kind="Account" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10"/>
+                    <TextBox x:Name="NicknameTextBox" AcceptsReturn="False"
+                             Text="{Binding Nickname, UpdateSourceTrigger=PropertyChanged}"
+                             FontSize="21" FontFamily="Segoe UI Emoji" MaxLength="21" MinWidth="275" MinHeight="42"
+                             HorizontalContentAlignment="Center" VerticalContentAlignment="Center" BorderThickness="0">
+                        <TextBox.Style>
+                            <Style TargetType="TextBox">
+                                <Setter Property="IsEnabled" Value="True"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsLoading}" Value="true">
+                                        <Setter Property="IsEnabled" Value="False"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBox.Style>
+                        <TextBox.InputBindings>
+                            <KeyBinding
+                                Key="Return"
+                                Command="{Binding StartCommand}"/>
+                        </TextBox.InputBindings>
+                    </TextBox>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+
+        <Grid Grid.Row="1" Margin="0,10,0,10" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Button Command="{Binding StartCommand}"
+                    MinHeight="60" MinWidth="240" VerticalContentAlignment="Center">
+                <StackPanel Orientation="Horizontal">
+                    <Grid>
+                        <Grid.Style>
+                            <Style TargetType="Grid">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsLoading}" Value="true">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Grid.Style>
+
+                        <loadin:LoadingIndicator Style="{DynamicResource LoadingIndicatorRingStyle}"/>
+                    </Grid>
+                    <TextBlock VerticalAlignment="Center" FontSize="21" FontFamily="Segoe UI Black" Margin="10">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Text" Value="Start"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsLoading}" Value="true">
+                                        <Setter Property="Text" Value="Loading"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
+            </Button>
+        </Grid>
+    </Grid>
+</mah:MetroWindow>

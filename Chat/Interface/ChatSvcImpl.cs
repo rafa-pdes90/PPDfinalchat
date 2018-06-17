@@ -1,5 +1,6 @@
 ﻿using System;
 using Chat.Model;
+using GalaSoft.MvvmLight.Messaging;
 
 namespace Chat.Interface
 {
@@ -11,9 +12,10 @@ namespace Chat.Interface
             return null;
         }
 
-        public void WriteMessage(string msg)
+        public void WriteMessage(ChatMsg msg)
         {
-            Console.WriteLine("Recebido: " + msg);
+            msg.IsSelfMessage = false;
+            Messenger.Default.Send(msg, "NewMsg");
         }
     }
 }
