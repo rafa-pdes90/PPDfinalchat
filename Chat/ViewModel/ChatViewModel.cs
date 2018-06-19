@@ -97,6 +97,8 @@ namespace Chat.ViewModel
             set => Set(() => this.ChatMsgList, ref this._chatMsgList, value);
         }
 
+        private IiopChannel SvcChannel { get; set; }
+        private IiopClientChannel ClientChannel { get; set; }
         private NamingContext NameService { get; set; }
 
         private MessengerWS.MessengerItfClient WsClient { get; set; }
@@ -128,15 +130,24 @@ namespace Chat.ViewModel
             string nameServiceUrl = "corbaloc::" + serverConfig.Get("NameServerHost") +
                                     ":" + serverConfig.Get("NameServerPort") + "/NameService";
 
-            IDictionary propBag = new Hashtable
+            IDictionary svcProps = new Hashtable
             {
                 ["port"] = 0,
                 ["name"] = this.Nickname, // here enter unique channel name
             };
 
             // register the channel
-            var chan = new IiopChannel(propBag);
-            ChannelServices.RegisterChannel(chan, false);
+            this.SvcChannel = new IiopChannel(svcProps);
+            ChannelServices.RegisterChannel(this.SvcChannel, false);
+
+            IDictionary clientProps = new Hashtable()
+            {
+                ["name"] = this.Nickname + "Client",  // here enter unique channel name
+            };
+
+            // register the channel
+            this.ClientChannel = new IiopClientChannel(clientProps);
+            ChannelServices.RegisterChannel(this.ClientChannel, false);
 
             var svc = new ChatSvcImpl();
             RemotingServices.Marshal(svc, this.Nickname);
@@ -178,16 +189,6 @@ namespace Chat.ViewModel
             try
             {
                 string testName = new string(this.Nickname.Reverse().ToArray());
-
-                IDictionary propBag = new Hashtable()
-                {
-                    ["name"] = testName,  // here enter unique channel name
-                };
-
-                // register the channel
-                var channel = new IiopClientChannel(propBag);
-                ChannelServices.RegisterChannel(channel, false);
-
                 var friendName = new[] { new NameComponent(testName) };
 
                 // get the reference to the adder
@@ -195,8 +196,6 @@ namespace Chat.ViewModel
 
                 // call add
                 friend.WriteMessage(msg);
-
-                ChannelServices.UnregisterChannel(channel);
             }
             catch (Exception e)
             {
