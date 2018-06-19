@@ -118,6 +118,7 @@ namespace Chat.ViewModel
             Task.Run(() =>
             {
                 ConnectToServers();
+                RecoverMessages();
                 this.IsLoading = false;
                 Messenger.Default.Send(this.Nickname, "Connected");
             });
@@ -159,6 +160,39 @@ namespace Chat.ViewModel
             this.NameService.rebind(name, svc);
 
             this.WsClient = new MessengerWS.MessengerItfClient();
+
+
+            this.TestName = new string(this.Nickname.Reverse().ToArray());
+            this.FriendName = new[] { new NameComponent(this.TestName) };
+
+            try
+            {
+                this.Friend = (IChatSvc) this.NameService.resolve(this.FriendName);
+            }
+            catch (System.Reflection.TargetInvocationException)
+            {
+                Console.WriteLine(@"Teste");
+            }
+        }
+
+        private string TestName { get; set; }
+        private NameComponent[] FriendName { get; set; }
+        private IChatSvc Friend { get; set; }
+
+        private void RecoverMessages()
+        {
+            MessengerWS.message[] messages = this.WsClient.getMessages(this.Nickname);
+
+            foreach (MessengerWS.message msg in messages)
+            {
+                var newChatMsg = new ChatMsg()
+                {
+                    Sender = msg.Sender,
+                    Content = msg.Content,
+                    IsSelfMessage = false,
+                };
+                AddToChatMsgList(newChatMsg);
+            }
         }
 
         private void PostMethod()
@@ -188,18 +222,23 @@ namespace Chat.ViewModel
         {
             try
             {
-                string testName = new string(this.Nickname.Reverse().ToArray());
-                var friendName = new[] { new NameComponent(testName) };
-
-                // get the reference to the adder
-                var friend = (IChatSvc)this.NameService.resolve(friendName);
-
-                // call add
-                friend.WriteMessage(msg);
+                this.Friend.WriteMessage(msg);
             }
-            catch (Exception e)
+            catch (omg.org.CORBA.TRANSIENT)
             {
-                Console.WriteLine(@"exception: " + e);
+                try
+                {
+                    this.Friend = (IChatSvc) this.NameService.resolve(this.FriendName);
+                    this.Friend.WriteMessage(msg);
+                }
+                catch (System.Reflection.TargetInvocationException)
+                {
+                    Console.WriteLine(@"Teste");
+                }
+                catch (omg.org.CORBA.TRANSIENT)
+                {
+                    this.WsClient.saveMessage(msg, this.TestName);
+                }
             }
         }
 
