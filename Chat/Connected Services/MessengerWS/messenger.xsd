@@ -1,15 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xs:schema xmlns:tns="http://messenger/" targetNamespace="http://messenger/" version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
-  <xs:element name="messenger" type="tns:messenger" />
-  <xs:element name="messengerResponse" type="tns:messengerResponse" />
-  <xs:complexType name="messenger">
+  <xs:element name="getMessages" type="tns:getMessages" />
+  <xs:element name="getMessagesResponse" type="tns:getMessagesResponse" />
+  <xs:element name="saveMessage" type="tns:saveMessage" />
+  <xs:element name="saveMessageResponse" type="tns:saveMessageResponse" />
+  <xs:complexType name="getMessages">
     <xs:sequence>
       <xs:element minOccurs="0" name="arg0" type="xs:string" />
     </xs:sequence>
   </xs:complexType>
-  <xs:complexType name="messengerResponse">
+  <xs:complexType name="getMessagesResponse">
     <xs:sequence>
-      <xs:element minOccurs="0" name="return" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="return" type="tns:message" />
     </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="message">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="Sender" type="xs:string" />
+      <xs:element minOccurs="0" name="Content" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="saveMessage">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="arg0" type="tns:message" />
+      <xs:element minOccurs="0" name="arg1" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="saveMessageResponse">
+    <xs:sequence />
   </xs:complexType>
 </xs:schema>

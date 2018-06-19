@@ -5,21 +5,40 @@
       <xsd:import schemaLocation="http://localhost:9999/messenger?xsd=1" namespace="http://messenger/" />
     </xsd:schema>
   </types>
-  <message name="messenger">
-    <part name="parameters" element="tns:messenger" />
+  <message name="saveMessage">
+    <part name="parameters" element="tns:saveMessage" />
   </message>
-  <message name="messengerResponse">
-    <part name="parameters" element="tns:messengerResponse" />
+  <message name="saveMessageResponse">
+    <part name="parameters" element="tns:saveMessageResponse" />
+  </message>
+  <message name="getMessages">
+    <part name="parameters" element="tns:getMessages" />
+  </message>
+  <message name="getMessagesResponse">
+    <part name="parameters" element="tns:getMessagesResponse" />
   </message>
   <portType name="MessengerItf">
-    <operation name="messenger">
-      <input wsam:Action="http://messenger/MessengerItf/messengerRequest" message="tns:messenger" />
-      <output wsam:Action="http://messenger/MessengerItf/messengerResponse" message="tns:messengerResponse" />
+    <operation name="saveMessage">
+      <input wsam:Action="http://messenger/MessengerItf/saveMessageRequest" message="tns:saveMessage" />
+      <output wsam:Action="http://messenger/MessengerItf/saveMessageResponse" message="tns:saveMessageResponse" />
+    </operation>
+    <operation name="getMessages">
+      <input wsam:Action="http://messenger/MessengerItf/getMessagesRequest" message="tns:getMessages" />
+      <output wsam:Action="http://messenger/MessengerItf/getMessagesResponse" message="tns:getMessagesResponse" />
     </operation>
   </portType>
   <binding name="MessengerImplPortBinding" type="tns:MessengerItf">
     <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
-    <operation name="messenger">
+    <operation name="saveMessage">
+      <soap12:operation soapAction="" />
+      <input>
+        <soap12:body use="literal" />
+      </input>
+      <output>
+        <soap12:body use="literal" />
+      </output>
+    </operation>
+    <operation name="getMessages">
       <soap12:operation soapAction="" />
       <input>
         <soap12:body use="literal" />

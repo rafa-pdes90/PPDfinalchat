@@ -157,7 +157,13 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <None Include="Connected Services\MessengerWS\Chat.MessengerWS.messengerResponse.datasource">
+    <None Include="Connected Services\MessengerWS\Chat.MessengerWS.getMessagesResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Connected Services\MessengerWS\Chat.MessengerWS.message.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Connected Services\MessengerWS\Chat.MessengerWS.saveMessageResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Connected Services\MessengerWS\messenger.xsd">

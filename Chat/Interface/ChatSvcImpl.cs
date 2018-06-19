@@ -12,10 +12,15 @@ namespace Chat.Interface
             return null;
         }
 
-        public void WriteMessage(ChatMsg msg)
+        public void WriteMessage(MessengerWS.message msg)
         {
-            msg.IsSelfMessage = false;
-            Messenger.Default.Send(msg, "NewMsg");
+            var newChatMsg = new ChatMsg()
+            {
+                Sender = msg.Sender,
+                Content = msg.Content,
+                IsSelfMessage = false,
+            };
+            Messenger.Default.Send(newChatMsg, "NewMsg");
         }
     }
 }

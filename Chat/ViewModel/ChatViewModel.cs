@@ -99,6 +99,8 @@ namespace Chat.ViewModel
 
         private NamingContext NameService { get; set; }
 
+        private MessengerWS.MessengerItfClient WsClient { get; set; }
+
 
         public ChatViewModel()
         {
@@ -110,6 +112,7 @@ namespace Chat.ViewModel
         private void StartMethod()
         {
             this.IsLoading = true;
+
             Task.Run(() =>
             {
                 ConnectToServers();
@@ -143,14 +146,16 @@ namespace Chat.ViewModel
             // publish the svc with an external name service
             this.NameService = (NamingContext)RemotingServices.Connect(typeof(NamingContext), nameServiceUrl);
             this.NameService.rebind(name, svc);
+
+            this.WsClient = new MessengerWS.MessengerItfClient();
         }
 
         private void PostMethod()
         {
-            var newMsg = new ChatMsg()
+            var newMsg = new MessengerWS.message()
             {
-                SenderName = this.Nickname,
-                MsgContent = this.PostText,
+                Sender = this.Nickname,
+                Content = this.PostText,
             };
 
             this.PostText = string.Empty;
@@ -158,12 +163,17 @@ namespace Chat.ViewModel
             Task.Run(() =>
             {
                 SendMessage(newMsg);
-                newMsg.IsSelfMessage = true;
-                AddToChatMsgList(newMsg);
+                var newChatMsg = new ChatMsg()
+                {
+                    Sender = newMsg.Sender,
+                    Content = newMsg.Content,
+                    IsSelfMessage = true,
+                };
+                AddToChatMsgList(newChatMsg);
             });
         }
 
-        private void SendMessage(ChatMsg msg)
+        private void SendMessage(MessengerWS.message msg)
         {
             try
             {

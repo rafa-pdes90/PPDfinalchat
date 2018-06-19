@@ -15,44 +15,117 @@ namespace Chat.MessengerWS {
     [System.ServiceModel.ServiceContractAttribute(Namespace="http://messenger/", ConfigurationName="MessengerWS.MessengerItf")]
     public interface MessengerItf {
         
-        // CODEGEN: Generating message contract since element name arg0 from namespace  is not marked nillable
-        [System.ServiceModel.OperationContractAttribute(Action="http://messenger/MessengerItf/messengerRequest", ReplyAction="http://messenger/MessengerItf/messengerResponse")]
-        Chat.MessengerWS.messengerResponse messenger(Chat.MessengerWS.messengerRequest request);
+        // CODEGEN: Parameter 'arg0' requires additional schema information that cannot be captured using the parameter mode. The specific attribute is 'System.Xml.Serialization.XmlElementAttribute'.
+        [System.ServiceModel.OperationContractAttribute(Action="http://messenger/MessengerItf/saveMessageRequest", ReplyAction="http://messenger/MessengerItf/saveMessageResponse")]
+        [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
+        Chat.MessengerWS.saveMessageResponse saveMessage(Chat.MessengerWS.saveMessageRequest request);
         
-        [System.ServiceModel.OperationContractAttribute(Action="http://messenger/MessengerItf/messengerRequest", ReplyAction="http://messenger/MessengerItf/messengerResponse")]
-        System.Threading.Tasks.Task<Chat.MessengerWS.messengerResponse> messengerAsync(Chat.MessengerWS.messengerRequest request);
+        [System.ServiceModel.OperationContractAttribute(Action="http://messenger/MessengerItf/saveMessageRequest", ReplyAction="http://messenger/MessengerItf/saveMessageResponse")]
+        System.Threading.Tasks.Task<Chat.MessengerWS.saveMessageResponse> saveMessageAsync(Chat.MessengerWS.saveMessageRequest request);
+        
+        // CODEGEN: Parameter 'return' requires additional schema information that cannot be captured using the parameter mode. The specific attribute is 'System.Xml.Serialization.XmlElementAttribute'.
+        [System.ServiceModel.OperationContractAttribute(Action="http://messenger/MessengerItf/getMessagesRequest", ReplyAction="http://messenger/MessengerItf/getMessagesResponse")]
+        [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
+        [return: System.ServiceModel.MessageParameterAttribute(Name="return")]
+        Chat.MessengerWS.getMessagesResponse getMessages(Chat.MessengerWS.getMessagesRequest request);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://messenger/MessengerItf/getMessagesRequest", ReplyAction="http://messenger/MessengerItf/getMessagesResponse")]
+        System.Threading.Tasks.Task<Chat.MessengerWS.getMessagesResponse> getMessagesAsync(Chat.MessengerWS.getMessagesRequest request);
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.7.3056.0")]
+    [System.SerializableAttribute()]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://messenger/")]
+    public partial class message : object, System.ComponentModel.INotifyPropertyChanged {
+        
+        private string senderField;
+        
+        private string contentField;
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Form=System.Xml.Schema.XmlSchemaForm.Unqualified, Order=0)]
+        public string Sender {
+            get {
+                return this.senderField;
+            }
+            set {
+                this.senderField = value;
+                this.RaisePropertyChanged("Sender");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Form=System.Xml.Schema.XmlSchemaForm.Unqualified, Order=1)]
+        public string Content {
+            get {
+                return this.contentField;
+            }
+            set {
+                this.contentField = value;
+                this.RaisePropertyChanged("Content");
+            }
+        }
+        
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        
+        protected void RaisePropertyChanged(string propertyName) {
+            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
+            if ((propertyChanged != null)) {
+                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            }
+        }
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
-    public partial class messengerRequest {
+    [System.ServiceModel.MessageContractAttribute(WrapperName="saveMessage", WrapperNamespace="http://messenger/", IsWrapped=true)]
+    public partial class saveMessageRequest {
         
-        [System.ServiceModel.MessageBodyMemberAttribute(Name="messenger", Namespace="http://messenger/", Order=0)]
-        public Chat.MessengerWS.messengerRequestBody Body;
+        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://messenger/", Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute(Form=System.Xml.Schema.XmlSchemaForm.Unqualified)]
+        public Chat.MessengerWS.message arg0;
         
-        public messengerRequest() {
+        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://messenger/", Order=1)]
+        [System.Xml.Serialization.XmlElementAttribute(Form=System.Xml.Schema.XmlSchemaForm.Unqualified)]
+        public string arg1;
+        
+        public saveMessageRequest() {
         }
         
-        public messengerRequest(Chat.MessengerWS.messengerRequestBody Body) {
-            this.Body = Body;
+        public saveMessageRequest(Chat.MessengerWS.message arg0, string arg1) {
+            this.arg0 = arg0;
+            this.arg1 = arg1;
         }
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    [System.Runtime.Serialization.DataContractAttribute(Namespace="")]
-    public partial class messengerRequestBody {
+    [System.ServiceModel.MessageContractAttribute(WrapperName="saveMessageResponse", WrapperNamespace="http://messenger/", IsWrapped=true)]
+    public partial class saveMessageResponse {
         
-        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=0)]
+        public saveMessageResponse() {
+        }
+    }
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+    [System.ServiceModel.MessageContractAttribute(WrapperName="getMessages", WrapperNamespace="http://messenger/", IsWrapped=true)]
+    public partial class getMessagesRequest {
+        
+        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://messenger/", Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute(Form=System.Xml.Schema.XmlSchemaForm.Unqualified)]
         public string arg0;
         
-        public messengerRequestBody() {
+        public getMessagesRequest() {
         }
         
-        public messengerRequestBody(string arg0) {
+        public getMessagesRequest(string arg0) {
             this.arg0 = arg0;
         }
     }
@@ -60,33 +133,17 @@ namespace Chat.MessengerWS {
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    [System.ServiceModel.MessageContractAttribute(IsWrapped=false)]
-    public partial class messengerResponse {
+    [System.ServiceModel.MessageContractAttribute(WrapperName="getMessagesResponse", WrapperNamespace="http://messenger/", IsWrapped=true)]
+    public partial class getMessagesResponse {
         
-        [System.ServiceModel.MessageBodyMemberAttribute(Name="messengerResponse", Namespace="http://messenger/", Order=0)]
-        public Chat.MessengerWS.messengerResponseBody Body;
+        [System.ServiceModel.MessageBodyMemberAttribute(Namespace="http://messenger/", Order=0)]
+        [System.Xml.Serialization.XmlElementAttribute("return", Form=System.Xml.Schema.XmlSchemaForm.Unqualified)]
+        public Chat.MessengerWS.message[] @return;
         
-        public messengerResponse() {
+        public getMessagesResponse() {
         }
         
-        public messengerResponse(Chat.MessengerWS.messengerResponseBody Body) {
-            this.Body = Body;
-        }
-    }
-    
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    [System.Runtime.Serialization.DataContractAttribute(Namespace="")]
-    public partial class messengerResponseBody {
-        
-        [System.Runtime.Serialization.DataMemberAttribute(EmitDefaultValue=false, Order=0)]
-        public string @return;
-        
-        public messengerResponseBody() {
-        }
-        
-        public messengerResponseBody(string @return) {
+        public getMessagesResponse(Chat.MessengerWS.message[] @return) {
             this.@return = @return;
         }
     }
@@ -119,28 +176,50 @@ namespace Chat.MessengerWS {
         }
         
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-        Chat.MessengerWS.messengerResponse Chat.MessengerWS.MessengerItf.messenger(Chat.MessengerWS.messengerRequest request) {
-            return base.Channel.messenger(request);
+        Chat.MessengerWS.saveMessageResponse Chat.MessengerWS.MessengerItf.saveMessage(Chat.MessengerWS.saveMessageRequest request) {
+            return base.Channel.saveMessage(request);
         }
         
-        public string messenger(string arg0) {
-            Chat.MessengerWS.messengerRequest inValue = new Chat.MessengerWS.messengerRequest();
-            inValue.Body = new Chat.MessengerWS.messengerRequestBody();
-            inValue.Body.arg0 = arg0;
-            Chat.MessengerWS.messengerResponse retVal = ((Chat.MessengerWS.MessengerItf)(this)).messenger(inValue);
-            return retVal.Body.@return;
+        public void saveMessage(Chat.MessengerWS.message arg0, string arg1) {
+            Chat.MessengerWS.saveMessageRequest inValue = new Chat.MessengerWS.saveMessageRequest();
+            inValue.arg0 = arg0;
+            inValue.arg1 = arg1;
+            Chat.MessengerWS.saveMessageResponse retVal = ((Chat.MessengerWS.MessengerItf)(this)).saveMessage(inValue);
         }
         
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-        System.Threading.Tasks.Task<Chat.MessengerWS.messengerResponse> Chat.MessengerWS.MessengerItf.messengerAsync(Chat.MessengerWS.messengerRequest request) {
-            return base.Channel.messengerAsync(request);
+        System.Threading.Tasks.Task<Chat.MessengerWS.saveMessageResponse> Chat.MessengerWS.MessengerItf.saveMessageAsync(Chat.MessengerWS.saveMessageRequest request) {
+            return base.Channel.saveMessageAsync(request);
         }
         
-        public System.Threading.Tasks.Task<Chat.MessengerWS.messengerResponse> messengerAsync(string arg0) {
-            Chat.MessengerWS.messengerRequest inValue = new Chat.MessengerWS.messengerRequest();
-            inValue.Body = new Chat.MessengerWS.messengerRequestBody();
-            inValue.Body.arg0 = arg0;
-            return ((Chat.MessengerWS.MessengerItf)(this)).messengerAsync(inValue);
+        public System.Threading.Tasks.Task<Chat.MessengerWS.saveMessageResponse> saveMessageAsync(Chat.MessengerWS.message arg0, string arg1) {
+            Chat.MessengerWS.saveMessageRequest inValue = new Chat.MessengerWS.saveMessageRequest();
+            inValue.arg0 = arg0;
+            inValue.arg1 = arg1;
+            return ((Chat.MessengerWS.MessengerItf)(this)).saveMessageAsync(inValue);
+        }
+        
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        Chat.MessengerWS.getMessagesResponse Chat.MessengerWS.MessengerItf.getMessages(Chat.MessengerWS.getMessagesRequest request) {
+            return base.Channel.getMessages(request);
+        }
+        
+        public Chat.MessengerWS.message[] getMessages(string arg0) {
+            Chat.MessengerWS.getMessagesRequest inValue = new Chat.MessengerWS.getMessagesRequest();
+            inValue.arg0 = arg0;
+            Chat.MessengerWS.getMessagesResponse retVal = ((Chat.MessengerWS.MessengerItf)(this)).getMessages(inValue);
+            return retVal.@return;
+        }
+        
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        System.Threading.Tasks.Task<Chat.MessengerWS.getMessagesResponse> Chat.MessengerWS.MessengerItf.getMessagesAsync(Chat.MessengerWS.getMessagesRequest request) {
+            return base.Channel.getMessagesAsync(request);
+        }
+        
+        public System.Threading.Tasks.Task<Chat.MessengerWS.getMessagesResponse> getMessagesAsync(string arg0) {
+            Chat.MessengerWS.getMessagesRequest inValue = new Chat.MessengerWS.getMessagesRequest();
+            inValue.arg0 = arg0;
+            return ((Chat.MessengerWS.MessengerItf)(this)).getMessagesAsync(inValue);
         }
     }
 }
