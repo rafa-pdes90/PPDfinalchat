@@ -64,7 +64,7 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <TextBox x:Name="NicknameTextBox" Grid.Column="0" AcceptsReturn="False" TextWrapping="Wrap" BorderThickness="1"
+            <TextBox Grid.Column="0" AcceptsReturn="False" TextWrapping="Wrap" BorderThickness="1"
                      mah:TextBoxHelper.ClearTextButton="True"
                      mah:TextBoxHelper.Watermark="Write a message..."
                      VerticalScrollBarVisibility="Auto" FontSize="13"
