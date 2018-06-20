@@ -284,7 +284,12 @@ namespace Chat.ViewModel
 
             if (room == null)
             {
-                room = new ChatRoom(contactName);
+                try {
+                    room = new ChatRoom(contactName);
+                }
+                catch (Exception) {
+                    return;
+                }
                 await DispatcherHelper.RunAsync(() => this.Rooms.Add(room));
             }
 
