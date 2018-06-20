@@ -100,6 +100,8 @@
     <Compile Include="Interface\ChatSvcImpl.cs" />
     <Compile Include="Interface\IChatSvc.cs" />
     <Compile Include="Model\ChatMsg.cs" />
+    <Compile Include="Model\ChatRoom.cs" />
+    <Compile Include="Model\ConnNaming.cs" />
     <Compile Include="ViewModel\ChatViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />

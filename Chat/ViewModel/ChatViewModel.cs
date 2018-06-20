@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Threading.Tasks;
@@ -9,12 +10,9 @@ using Chat.Interface;
 using GalaSoft.MvvmLight;
 using Chat.Model;
 using GalaSoft.MvvmLight.CommandWpf;
-using GalaSoft.MvvmLight.Threading;
 using omg.org.CosNaming;
-using System.Configuration;
-using System.Collections.Specialized;
-using System.Linq;
 using GalaSoft.MvvmLight.Messaging;
+using GalaSoft.MvvmLight.Threading;
 
 namespace Chat.ViewModel
 {
@@ -71,6 +69,35 @@ namespace Chat.ViewModel
             set => Set(() => this.IsLoading, ref this._isLoading, value);
         }
 
+        /// <summary>
+        /// The <see cref="CurrentRoom" /> property's name.
+        /// </summary>
+        public const string CurrentRoomPropertyName = "CurrentRoom";
+
+        private ChatRoom _currentRoom = null;
+
+        /// <summary>
+        /// Sets and gets the CurrentRoom property.
+        /// Changes to that property's value raise the PropertyChanged event. 
+        /// </summary>
+        public ChatRoom CurrentRoom
+        {
+            get => this._currentRoom;
+            set
+            {
+                Set(() => this.CurrentRoom, ref this._currentRoom, value);
+                this._currentRoom.LoadRoom();
+            }
+        }
+
+        private ObservableCollection<ChatRoom> _rooms;
+
+        public ObservableCollection<ChatRoom> Rooms
+        {
+            get => this._rooms;
+            private set => Set(() => this.Rooms, ref this._rooms, value);
+        }
+
         private RelayCommand _startCommand;
 
         /// <summary>
@@ -89,26 +116,19 @@ namespace Chat.ViewModel
             this._postCommand ?? (this._postCommand = new RelayCommand(PostMethod,
                 () => !string.IsNullOrEmpty(this.PostText)));
 
-        private ObservableCollection<ChatMsg> _chatMsgList;
-
-        public ObservableCollection<ChatMsg> ChatMsgList
-        {
-            get => this._chatMsgList;
-            set => Set(() => this.ChatMsgList, ref this._chatMsgList, value);
-        }
-
         private IiopChannel SvcChannel { get; set; }
         private IiopClientChannel ClientChannel { get; set; }
-        private NamingContext NameService { get; set; }
-
+        private ChatSvcImpl ChatSvc { get; set; }
         private MessengerWS.MessengerItfClient WsClient { get; set; }
 
 
         public ChatViewModel()
         {
-            this.ChatMsgList = new ObservableCollection<ChatMsg>();
+            this.Rooms = new ObservableCollection<ChatRoom>();
 
-            Messenger.Default.Register<ChatMsg>(this, "NewMsg", AddToChatMsgList);
+            Messenger.Default.Register<bool>(this, "OnlineStatus", ToggleConnection);
+            Messenger.Default.Register<ChatMsg>(this, "NewMsg", AddToRoom);
+            Messenger.Default.Register<string>(this, "NewContact", CreateRoom);
         }
 
         private void StartMethod()
@@ -126,18 +146,12 @@ namespace Chat.ViewModel
 
         private void ConnectToServers()
         {
-            NameValueCollection serverConfig = ConfigurationManager.AppSettings;
-
-            string nameServiceUrl = "corbaloc::" + serverConfig.Get("NameServerHost") +
-                                    ":" + serverConfig.Get("NameServerPort") + "/NameService";
-
             IDictionary svcProps = new Hashtable
             {
                 ["port"] = 0,
                 ["name"] = this.Nickname, // here enter unique channel name
             };
-
-            // register the channel
+            
             this.SvcChannel = new IiopChannel(svcProps);
             ChannelServices.RegisterChannel(this.SvcChannel, false);
 
@@ -146,38 +160,19 @@ namespace Chat.ViewModel
                 ["name"] = this.Nickname + "Client",  // here enter unique channel name
             };
 
-            // register the channel
             this.ClientChannel = new IiopClientChannel(clientProps);
             ChannelServices.RegisterChannel(this.ClientChannel, false);
 
-            var svc = new ChatSvcImpl();
-            RemotingServices.Marshal(svc, this.Nickname);
+            this.ChatSvc = new ChatSvcImpl();
+            RemotingServices.Marshal(this.ChatSvc, this.Nickname);
 
             var name = new[] { new NameComponent(this.Nickname) };
 
             // publish the svc with an external name service
-            this.NameService = (NamingContext)RemotingServices.Connect(typeof(NamingContext), nameServiceUrl);
-            this.NameService.rebind(name, svc);
+            ConnNaming.Service.rebind(name, this.ChatSvc);
 
             this.WsClient = new MessengerWS.MessengerItfClient();
-
-
-            this.TestName = new string(this.Nickname.Reverse().ToArray());
-            this.FriendName = new[] { new NameComponent(this.TestName) };
-
-            try
-            {
-                this.Friend = (IChatSvc) this.NameService.resolve(this.FriendName);
-            }
-            catch (System.Reflection.TargetInvocationException)
-            {
-                Console.WriteLine(@"Teste");
-            }
         }
-
-        private string TestName { get; set; }
-        private NameComponent[] FriendName { get; set; }
-        private IChatSvc Friend { get; set; }
 
         private void RecoverMessages()
         {
@@ -191,7 +186,21 @@ namespace Chat.ViewModel
                     Content = msg.Content,
                     IsSelfMessage = false,
                 };
-                AddToChatMsgList(newChatMsg);
+
+                AddToRoom(newChatMsg);
+            }
+        }
+
+        private void ToggleConnection(bool online)
+        {
+            if (online)
+            {
+                RemotingServices.Marshal(this.ChatSvc, this.Nickname);
+                RecoverMessages();
+            }
+            else
+            {
+                RemotingServices.Disconnect(this.ChatSvc);
             }
         }
 
@@ -205,46 +214,81 @@ namespace Chat.ViewModel
 
             this.PostText = string.Empty;
 
-            Task.Run(() =>
-            {
-                SendMessage(newMsg);
-                var newChatMsg = new ChatMsg()
-                {
-                    Sender = newMsg.Sender,
-                    Content = newMsg.Content,
-                    IsSelfMessage = true,
-                };
-                AddToChatMsgList(newChatMsg);
-            });
+            Task.Run(() => SendMessage(this.CurrentRoom, newMsg));
         }
 
-        private void SendMessage(MessengerWS.message msg)
+        private void SendMessage(ChatRoom room, MessengerWS.message msg)
         {
             try
             {
-                this.Friend.WriteMessage(msg);
+                room.Client.WriteMessage(msg);
             }
-            catch (omg.org.CORBA.TRANSIENT)
+            catch (Exception e)
             {
-                try
+                switch (e)
                 {
-                    this.Friend = (IChatSvc) this.NameService.resolve(this.FriendName);
-                    this.Friend.WriteMessage(msg);
-                }
-                catch (System.Reflection.TargetInvocationException)
-                {
-                    Console.WriteLine(@"Teste");
-                }
-                catch (omg.org.CORBA.TRANSIENT)
-                {
-                    this.WsClient.saveMessage(msg, this.TestName);
+                    case omg.org.CORBA.OBJECT_NOT_EXIST _:
+                    case omg.org.CORBA.TRANSIENT _:
+                    {
+                        try
+                        {
+                            room.RefreshClient();
+                            room.Client.WriteMessage(msg);
+                        }
+                        catch (System.Reflection.TargetInvocationException)
+                        {
+                            Console.WriteLine(@"Naming Server is unreachable");
+                            throw;
+                        }
+                        catch (Exception exp)
+                        {
+                            switch (exp)
+                            {
+                                case omg.org.CORBA.OBJECT_NOT_EXIST _:
+                                case omg.org.CORBA.TRANSIENT _:
+                                    this.WsClient.saveMessage(msg, room.ContactName);
+                                    break;
+                            }
+                        }
+                    }
+                        break;
                 }
             }
+
+            var newChatMsg = new ChatMsg()
+            {
+                Sender = msg.Sender,
+                Content = msg.Content,
+                IsSelfMessage = true,
+            };
+
+            room.AddToChatMsgList(newChatMsg, this.CurrentRoom);
         }
 
-        private void AddToChatMsgList(ChatMsg chatMessage)
+        private async void AddToRoom(ChatMsg msg)
         {
-            DispatcherHelper.CheckBeginInvokeOnUI(() => this.ChatMsgList.Add(chatMessage));
+            ChatRoom room = this.Rooms.FirstOrDefault(x => x.ContactName == msg.Sender);
+
+            if (room == null)
+            {
+                room = new ChatRoom(msg.Sender);
+                await DispatcherHelper.RunAsync(() => this.Rooms.Add(room));
+            }
+
+            room.AddToChatMsgList(msg, this.CurrentRoom);
+        }
+
+        private async void CreateRoom(string contactName)
+        {
+            ChatRoom room = this.Rooms.FirstOrDefault(x => x.ContactName == contactName);
+
+            if (room == null)
+            {
+                room = new ChatRoom(contactName);
+                await DispatcherHelper.RunAsync(() => this.Rooms.Add(room));
+            }
+
+            this.CurrentRoom = room;
         }
     }
 }

@@ -25,7 +25,7 @@ namespace Chat.Controls
         {
             if (Math.Abs(e.VerticalChange) > 0) return;
 
-            ChatMsg newChatMessage = this.Vm.ChatMsgList.LastOrDefault();
+            ChatMsg newChatMessage = this.Vm.CurrentRoom?.ChatMsgList.LastOrDefault();
 
             if (newChatMessage == null || !newChatMessage.IsSelfMessage) return;
 

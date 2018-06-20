@@ -1,8 +1,6 @@
-﻿using Chat.Model;
-
-namespace Chat.Interface
+﻿namespace Chat.Interface
 {
-    /// <summary>The adder interface</summary>
+    /// <summary>The chat interface</summary>
     internal interface IChatSvc
     {
         void WriteMessage(MessengerWS.message msg);

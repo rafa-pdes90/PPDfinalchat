@@ -1,4 +1,6 @@
-﻿using System.Windows.Media.Effects;
+﻿using System.Threading.Tasks;
+using System.Windows.Media.Effects;
+using Chat.Model;
 using Chat.View;
 using Chat.ViewModel;
 using GalaSoft.MvvmLight.Messaging;
@@ -31,16 +33,6 @@ namespace Chat
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            /*
-            if (this.Vm.IsConnecting)
-            {
-                this.Vm.IsPlaying = false;
-                GameMaster.Client.CancelMatch();
-            }
-
-            GameMaster.Client.LeaveGame();
-            */
-
             ViewModelLocator.Cleanup();
         }
 

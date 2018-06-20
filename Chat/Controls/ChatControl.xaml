@@ -26,11 +26,22 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
+        <Grid.Style>
+            <Style TargetType="Grid">
+                <Setter Property="IsEnabled" Value="True"/>
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding CurrentRoom}" Value="{x:Null}">
+                        <Setter Property="IsEnabled" Value="False"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Grid.Style>
+
         <Grid Grid.Row="0">
             <Border BorderBrush="LightGray" BorderThickness="1">
                 <ScrollViewer x:Name="ChatScrollViewer" ScrollChanged="ChatScrollViewer_ScrollChanged">
                     <ItemsControl x:Name="ChatHolder" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Padding="10"
-                                  ItemsSource="{Binding ChatMsgList}">
+                                  ItemsSource="{Binding CurrentRoom.ChatMsgList}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel x:Name="MsgPanel" HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -79,7 +90,7 @@
                     Command="{Binding PostCommand}"
                     Style="{DynamicResource AccentedSquareButtonStyle}">
                 <Button.Content>
-                    <Label Content="Post" BorderThickness="0" Padding="0"/>
+                    <Label x:Name="PostButton" Content="Post" BorderThickness="0" Padding="0"/>
                 </Button.Content>
             </Button>
         </Grid>

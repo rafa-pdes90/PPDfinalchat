@@ -62,12 +62,47 @@
                 </Button>
             </Grid>
 
-            <Grid Grid.Row="1">
-
+            <Grid Grid.Row="1" DataContext="{Binding ChatVm, Source={StaticResource Locator}}">
+                <ListBox x:Name="ContactList" SelectionMode="Single"
+                         SelectedItem="{Binding CurrentRoom, UpdateSourceTrigger=PropertyChanged}"
+                         ItemsSource="{Binding Rooms}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{Binding ContactName}"
+                                           FontSize="21" FontFamily="Segoe UI Emoji"/>
+                                <Label Grid.Column="1" Content="{Binding UnreadCount}"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                    <ListBox.Resources>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListBoxItem">
+                                        <Border Name="Border" Padding="2" SnapsToDevicePixels="true">
+                                            <ContentPresenter />
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsSelected" Value="true">
+                                                <Setter TargetName="Border" Property="Background"
+                                                        Value="LightBlue"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListBox.Resources>
+                </ListBox>
             </Grid>
 
             <Grid Grid.Row="2">
-                <Button Command="{Binding ToggleConnection}">
+                <Button Command="{Binding ToggleConnectionCommand}">
                     <Button.Content>
                         <Label BorderThickness="0" Padding="0"
                                FontSize="21" FontFamily="Segoe UI Emoji"
@@ -89,6 +124,17 @@
         </Grid>
 
         <Grid Grid.Column="1">
+            <Grid.Style>
+                <Style TargetType="Grid">
+                    <Setter Property="IsEnabled" Value="True"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsOnline}" Value="False">
+                            <Setter Property="IsEnabled" Value="False"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
+
             <controls:ChatControl/>
         </Grid>
     </Grid>
